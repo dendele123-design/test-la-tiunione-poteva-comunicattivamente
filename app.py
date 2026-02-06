@@ -4,47 +4,53 @@ import time
 # --- CONFIGURAZIONE PAGINA ---
 st.set_page_config(page_title="La Riunione poteva essere una Mail - Test", page_icon="📧", layout="centered")
 
-# --- STILE CSS (Personalizzato con Rosso #dc061e) ---
-st.markdown(f"""
+# --- STILE CSS (HARDCODED - NO F-STRING PER EVITARE ERRORI) ---
+st.markdown("""
     <style>
-    .stApp {{ background-color: #ffffff !important; }}
-    html, body, [class*="css"], .stMarkdown, p, h1, h2, h3, h4, span, label {{
+    /* SFONDO E TESTO GENERALE */
+    .stApp { background-color: #ffffff !important; }
+    
+    html, body, [class*="css"], .stMarkdown, p, h1, h2, h3, h4, span, label {
         color: #1a1a1a !important;
-    }}
+    }
 
-    /* BOTTONI OPZIONI */
-    .stButton>button {{ 
+    /* BOTTONI OPZIONI (GRIGIO CHIARO) */
+    .stButton>button { 
         width: 100%; border-radius: 8px !important; height: 3.5em !important; 
         font-weight: bold !important; background-color: #f1f3f6 !important; 
         color: #1a1a1a !important; border: 1px solid #d1d5db !important;
     }
-    .stButton>button:hover {{ border: 1px solid #dc061e !important; color: #dc061e !important; }}
+    .stButton>button:hover { border: 1px solid #dc061e !important; color: #dc061e !important; }
 
-    /* BOTTONE PRIMARIO (Rosso #dc061e) */
-    div.stButton > button:first-child[kind="primary"] {{
+    /* BOTTONE ROSSO (#dc061e) */
+    div.stButton > button:first-child[kind="primary"] {
         background-color: #dc061e !important; color: #ffffff !important; border: none !important;
-    }}
+    }
 
-    /* HEADER QUESITO */
-    .area-header {{ 
+    /* HEADER QUESITO (NERO) */
+    .area-header { 
         background-color: #000000 !important; color: #ffffff !important; 
         padding: 10px; text-align: center; font-weight: bold; border-radius: 5px; margin-bottom: 20px; 
-    }}
+    }
 
-    /* BOX FEEDBACK (La Nota dell'Architetto) */
-    .lesson-box {{ 
+    /* LA NOTA DELL'ARCHITETTO (BOX FEEDBACK) */
+    .lesson-box { 
         background-color: #f8f9fa !important; color: #1a1a1a !important; 
         padding: 25px; border-radius: 10px; border-left: 8px solid #dc061e !important; 
         margin-top: 20px; box-shadow: 2px 2px 10px rgba(0,0,0,0.05); 
-    }}
+    }
 
-    .profile-box {{ padding: 30px; border-radius: 15px; border: 2px solid #000 !important; margin-top: 20px; }}
-    .contact-box {{ text-align: center; padding: 25px; background-color: #f1f1f1 !important; border-radius: 10px; margin-top: 40px; }}
-    header {{visibility: hidden !important;}} footer {{visibility: hidden !important;}} #MainMenu {{visibility: hidden !important;}}
+    /* PROFILI FINALI */
+    .profile-box { padding: 30px; border-radius: 15px; border: 2px solid #000 !important; margin-top: 20px; }
+    
+    /* CONTATTI */
+    .contact-box { text-align: center; padding: 25px; background-color: #f1f1f1 !important; border-radius: 10px; margin-top: 40px; }
+    
+    header {visibility: hidden !important;} footer {visibility: hidden !important;} #MainMenu {visibility: hidden !important;}
     </style>
     """, unsafe_allow_html=True)
 
-# --- DATABASE DELLE DOMANDE CON DOPPIO FEEDBACK ---
+# --- DATABASE DELLE DOMANDE ---
 domande = [
     {
         "testo": "L'ULTIMA RIUNIONE AVEVA UN ORDINE DEL GIORNO SCRITTO?",
@@ -109,14 +115,15 @@ st.title("TERMOMETRO DELL'INUTILITÀ")
 
 if st.session_state.step < len(domande):
     item = domande[st.session_state.step]
-    st.markdown(f"<div class='area-header'>QUESITO {st.session_state.step + 1} di {len(domande)}</div>", unsafe_allow_html=True)
+    # Qui usiamo f-string solo per parti piccole e sicure
+    st.markdown("<div class='area-header'>QUESITO " + str(st.session_state.step + 1) + " di " + str(len(domande)) + "</div>", unsafe_allow_html=True)
     st.header(item['testo'])
-    st.write(f"*{item['sotto']}*")
+    st.write("*" + item['sotto'] + "*")
     st.divider()
 
     if not st.session_state.show_lesson:
         for i, opt in enumerate(item['opzioni']):
-            if st.button(opt['testo'], key=f"btn_{st.session_state.step}_{i}"):
+            if st.button(opt['testo'], key="btn_" + str(st.session_state.step) + "_" + str(i)):
                 st.session_state.total_score += opt['punti']
                 st.session_state.last_choice = opt['punti']
                 st.session_state.show_lesson = True
@@ -124,7 +131,7 @@ if st.session_state.step < len(domande):
     else:
         # FEEDBACK DIFFERENZIATO
         messaggio = item['feedback_ok'] if st.session_state.last_choice == 0 else item['feedback_no']
-        st.markdown(f"<div class='lesson-box'><b>LA NOTA DELL'ARCHITETTO:</b><br><br>{messaggio}</div>", unsafe_allow_html=True)
+        st.markdown("<div class='lesson-box'><b>LA NOTA DELL'ARCHITETTO:</b><br><br>" + messaggio + "</div>", unsafe_allow_html=True)
         
         if st.button("PROSSIMO PASSO ➡️", type="primary"):
             st.session_state.step += 1
@@ -134,21 +141,24 @@ else:
     # --- RISULTATI FINALI ---
     st.header("📊 LA TUA DIAGNOSI")
     score = st.session_state.total_score
+    max_q = len(domande)
+    
     if score <= 1:
-        st.markdown(f"<div class='profile-box' style='background-color: #d4edda;'><h3>😇 ARCHITETTO ZEN</h3><p>Punteggio: {score}/{len(domande)}<br><br>Sei un alieno. La tua azienda è snella e veloce. Attento solo a non diventare troppo rigido.</p></div>", unsafe_allow_html=True)
+        st.markdown("<div class='profile-box' style='background-color: #d4edda;'><h3>😇 ARCHITETTO ZEN</h3><p>Sei un alieno. La tua azienda è snella e veloce. Attento solo a non diventare troppo rigido.</p></div>", unsafe_allow_html=True)
     elif score <= 4:
-        st.markdown(f"<div class='profile-box' style='background-color: #fff3cd;'><h3>🏃 POMPIERE IN AFFANNO</h3><p>Punteggio: {score}/{len(domande)}<br><br>Corri tantissimo per restare fermo. Le inefficienze ti mangiano il 30% della giornata.</p></div>", unsafe_allow_html=True)
+        st.markdown("<div class='profile-box' style='background-color: #fff3cd;'><h3>🏃 POMPIERE IN AFFANNO</h3><p>Corri tantissimo per restare fermo. Le inefficienze ti mangiano il 30% della giornata.</p></div>", unsafe_allow_html=True)
     else:
-        st.markdown(f"<div class='profile-box' style='background-color: #f8d7da;'><h3>🧟 ZOMBIE ORGANIZZATIVO</h3><p>Punteggio: {score}/{len(domande)}<br><br>La tua azienda è posseduta dal caos. Non lavori, sopravvivi a notifiche e riunioni inutili.</p></div>", unsafe_allow_html=True)
+        st.markdown("<div class='profile-box' style='background-color: #f8d7da;'><h3>🧟 ZOMBIE ORGANIZZATIVO</h3><p>La tua azienda è posseduta dal caos. Non lavori, sopravvivi a notifiche e riunioni inutili.</p></div>", unsafe_allow_html=True)
 
     st.divider()
     st.subheader("VUOI GUARIRE?")
     
-    col1, col2 = st.columns(2)
-    col1.link_button("📘 ACQUISTA IL LIBRO", "https://www.comunicattivamente.it", type="primary")
-    col2.link_button("🛠️ PROVA IL TOOLKIT", "https://tuo-toolkit-link.it") # <--- AGGIUNGI QUI IL LINK ALLA TUA WEB APP
+    col1, col2, col3 = st.columns(3)
+    col1.link_button("📘 IL LIBRO", "https://www.comunicattivamente.it", type="primary")
+    col2.link_button("🛠️ IL TOOLKIT", "https://tuo-toolkit-link.it")
+    col3.link_button("📅 ESORCISMO", "mailto:daniele@comunicattivamente.it")
 
-    st.markdown(f"""
+    st.markdown("""
         <div class="contact-box">
             <b>Daniele Salvatori</b><br>
             <i>Esorcista Aziendale | Partner SuPeR^</i><br><br>
