@@ -2,7 +2,6 @@ name: Keep App Awake
 
 on:
   schedule:
-    # Gira ogni 4 ore
     - cron: '0 */4 * * *'
   workflow_dispatch: 
 
@@ -10,6 +9,6 @@ jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Sveglia App
+      - name: Sveglia forzata
         run: |
-          curl -I -L -s "https://test-la-riunione-poteva-essere-una-mail.streamlit.app/"
+          curl -L -s -o /dev/null -w "%{http_code}" "https://test-la-riunione-poteva-essere-una-mail.streamlit.app/" || true
